@@ -1,0 +1,10 @@
+node_modules/
+.runtime/
+staging/
+capt-chatgpt-skills/
+.DS_Store
+*.log
+coverage/
+.env
+.env.*
+!.env.example

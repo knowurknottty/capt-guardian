@@ -1,0 +1,25 @@
+{
+  "name": "capt-guardian",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Governed authority and verifiable execution receipts for Alexa+ MCP workflows.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:core": "node --test tests/guardian.test.mjs",
+    "start": "node src/server.mjs",
+    "bench:mcp": "node scripts/benchmark-mcp.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "MIT",
+  "keywords": [
+    "alexa-plus",
+    "mcp",
+    "governance",
+    "agentic-workflows",
+    "provenance",
+    "receipts"
+  ]
+}
