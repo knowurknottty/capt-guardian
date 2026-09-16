@@ -50,3 +50,4 @@ mkdirSync(dirname(output), { recursive: true });
 writeFileSync(output, `${JSON.stringify(report, null, 2)}\n`);
 console.log(JSON.stringify(report));
 await app.close();
+if (!report.passesLocalThreshold) process.exitCode = 1;
