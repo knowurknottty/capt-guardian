@@ -25,6 +25,9 @@ CAPT Guardian must fail closed: no model, Alexa component, MCP client, downstrea
 | Hidden fallback executor | Executor identity is recorded; no silent provider/tool substitution |
 | Side effect occurs before receipt | Execution record captures exact action/authority/result; adapter response is bound into receipt |
 | Alexa OAuth token mistaken for human consent | Account identity/authentication and per-action Guardian approval remain separate authority layers |
+| Service token escalates into user actions | `mcp:service` permits initialization/discovery only; tool calls require user `mcp:tools` |
+| Forged/wrong-audience JWT | Verify signature, issuer, audience, expiry and accepted algorithms against configured JWKS |
+| Cross-household workflow access | Bind workflow to hashed OAuth principal and reject mismatched principals before read/mutation/execution |
 | Human approval credential leaks | Header-only bearer credential, no query-string support, no-store responses, minimum secret length, rotate independently of Alexa OAuth |
 | Stale Alexa registration | Tool/auth changes require redeploy and runtime revalidation |
 | Repository leaks CAPT internals/secrets | Public allowlist; no mothership copy, credentials, private config, memory or research artifacts |

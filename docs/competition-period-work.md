@@ -11,6 +11,8 @@ CAPT Guardian / CAPT Relay is a deliberately scoped public derivative informed b
 - typed evidence/provenance records;
 - execution and receipt ledger structures;
 - separately authenticated, digest-bound human approval request/decision channel;
+- OAuth JWT/JWKS resource-server verification and RFC 9728 protected-resource metadata;
+- service-vs-user scope separation and OAuth-principal workflow isolation;
 - Alexa+-compatible MCP tool surface;
 - MCP `2025-11-25` Streamable HTTP compatibility tests;
 - real Node HTTP server and Host/Origin guards;

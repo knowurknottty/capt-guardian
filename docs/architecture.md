@@ -7,11 +7,12 @@ No downstream model, MCP client, Alexa component, or executor receives authority
 ## Planes
 
 1. **MCP edge** — validates Alexa+/MCP inputs and exposes bounded workflow tools.
-2. **Workflow plane** — holds intent, scenario, evidence, proposed actions, approvals, and executions.
-3. **Evidence plane** — preserves epistemic type and provenance; model inference is never silently promoted to observation/fact.
-4. **Authority plane** — canonicalizes the proposed action and binds approval to its SHA-256 digest.
-5. **Execution plane** — receives an already-authorized action and records executor identity/result.
-6. **Receipt plane** — returns the complete causal chain and unresolved/denied state.
+2. **Identity plane** — verifies OAuth JWTs, separates service discovery from user scopes, and binds workflows to a stable OAuth principal.
+3. **Workflow plane** — holds intent, scenario, evidence, proposed actions, approvals, and executions.
+4. **Evidence plane** — preserves epistemic type and provenance; model inference is never silently promoted to observation/fact.
+5. **Authority plane** — canonicalizes the proposed action and binds approval to its SHA-256 digest.
+6. **Execution plane** — receives an already-authorized action and records executor identity/result.
+7. **Receipt plane** — returns the complete causal chain and unresolved/denied state.
 
 ## Authority transition
 
@@ -50,3 +51,7 @@ Alexa account linking and Guardian approval are intentionally separate. Alexa OA
 `@modelcontextprotocol/server` v2 serves the modern protocol and its built-in legacy stateless fallback serves 2025-era Streamable HTTP. Tests pin Alexa+ compatibility by negotiating `2025-11-25` explicitly.
 
 The local Node boundary uses Host and Origin validation before the MCP handler. Public deployment must additionally add production OAuth/resource-server verification and remote latency evidence.
+
+## OAuth identity boundary
+
+The MCP resource server verifies signed access tokens against configured issuer/audience/JWKS values. `mcp:service` is discovery authority only; `mcp:tools` authorizes user-level tool calls but still does not authorize consequential side effects. Workflow ownership is bound to a hashed OAuth principal so one linked identity cannot inspect or mutate another identity's workflow. Human approval remains a separate authority layer.

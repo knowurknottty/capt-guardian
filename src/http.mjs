@@ -2,10 +2,12 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 import { createServer as createNodeServer } from 'node:http';
 import { hostHeaderValidation, originValidation, toNodeHandler } from '@modelcontextprotocol/node';
 import { AuthorityDenied } from './guardian/service.mjs';
+import { hasAnyScope, requiredScopesForMcpBody } from './auth.mjs';
 import { createGuardianMcpHandler } from './mcp.mjs';
 
 const DEFAULT_LOCAL_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 const MAX_HUMAN_BODY_BYTES = 16 * 1024;
+const MAX_MCP_BODY_BYTES = 512 * 1024;
 
 function json(res, status, value) {
   res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store' });
@@ -24,13 +26,13 @@ function bearerToken(req) {
   return value.slice(7);
 }
 
-async function readJsonBody(req) {
+async function readJsonBody(req, maxBytes = MAX_HUMAN_BODY_BYTES) {
   const chunks = [];
   let size = 0;
   for await (const raw of req) {
     const chunk = Buffer.isBuffer(raw) ? raw : Buffer.from(raw);
     size += chunk.length;
-    if (size > MAX_HUMAN_BODY_BYTES) throw new RangeError('request_body_too_large');
+    if (size > maxBytes) throw new RangeError('request_body_too_large');
     chunks.push(chunk);
   }
   const text = Buffer.concat(chunks).toString('utf8');
@@ -43,6 +45,7 @@ export function createGuardianHttpServer({
   allowedOriginHostnames = DEFAULT_LOCAL_HOSTS,
   humanApprovalToken = null,
   humanPrincipal = 'human:local-operator',
+  oauth = null,
   onerror = (error) => console.error('[capt-guardian]', error),
 } = {}) {
   if (!service) throw new TypeError('service_required');
@@ -60,6 +63,15 @@ export function createGuardianHttpServer({
     const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
     if (url.pathname === '/healthz') {
       json(res, 200, { ok: true, service: 'capt-guardian' });
+      return;
+    }
+
+    if (oauth && [
+      '/.well-known/oauth-protected-resource',
+      '/.well-known/oauth-protected-resource/mcp',
+    ].includes(url.pathname)) {
+      if (!validateHost(req, res) || !validateOrigin(req, res)) return;
+      json(res, 200, oauth.metadata);
       return;
     }
 
@@ -112,8 +124,40 @@ export function createGuardianHttpServer({
       return;
     }
     if (!validateHost(req, res) || !validateOrigin(req, res)) return;
+
+    let parsedBody;
+    if (oauth) {
+      const token = bearerToken(req);
+      if (!token) {
+        json(res, 401, { error: 'unauthorized' });
+        return;
+      }
+      let authInfo;
+      try {
+        authInfo = await oauth.verifyAccessToken(token);
+      } catch (error) {
+        onerror(error);
+        json(res, 401, { error: 'invalid_token' });
+        return;
+      }
+      if (req.method === 'POST') {
+        try {
+          parsedBody = await readJsonBody(req, MAX_MCP_BODY_BYTES);
+        } catch (error) {
+          json(res, 400, { error: error.message });
+          return;
+        }
+        const allowedScopes = requiredScopesForMcpBody(parsedBody);
+        if (!hasAnyScope(authInfo, allowedScopes)) {
+          json(res, 403, { error: 'insufficient_scope', required: allowedScopes });
+          return;
+        }
+      }
+      req.auth = authInfo;
+    }
+
     try {
-      await nodeHandler(req, res);
+      await nodeHandler(req, res, parsedBody);
     } catch (error) {
       onerror(error);
       if (!res.headersSent) res.writeHead(500, { 'content-type': 'application/json' });

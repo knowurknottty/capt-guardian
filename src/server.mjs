@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { GuardianService } from './guardian/service.mjs';
 import { createGuardianHttpServer } from './http.mjs';
+import { createOAuthConfigFromEnv } from './auth.mjs';
 
 const host = process.env.CAPT_GUARDIAN_HOST ?? '127.0.0.1';
 const port = Number(process.env.CAPT_GUARDIAN_PORT ?? '8788');
@@ -20,9 +21,10 @@ const allowedOriginHostnames = (process.env.CAPT_GUARDIAN_ALLOWED_ORIGINS ?? 'lo
 
 const humanApprovalToken = process.env.CAPT_GUARDIAN_HUMAN_APPROVAL_TOKEN ?? null;
 const humanPrincipal = process.env.CAPT_GUARDIAN_HUMAN_PRINCIPAL ?? 'human:local-operator';
+const oauth = createOAuthConfigFromEnv(process.env);
 
 const app = createGuardianHttpServer({
-  service, allowedHostnames, allowedOriginHostnames, humanApprovalToken, humanPrincipal,
+  service, allowedHostnames, allowedOriginHostnames, humanApprovalToken, humanPrincipal, oauth,
 });
 app.server.listen(port, host, () => {
   console.log(JSON.stringify({ event: 'capt_guardian_listening', host, port, mcpPath: '/mcp' }));

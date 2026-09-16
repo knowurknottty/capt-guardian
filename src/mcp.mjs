@@ -1,5 +1,6 @@
 import { McpServer, createMcpHandler } from '@modelcontextprotocol/server';
 import { z } from 'zod';
+import { oauthPrincipal } from './auth.mjs';
 import {
   ApprovalDecision, AuthorityDenied, Consequence, EvidenceKind, GuardianService,
 } from '../src/guardian/service.mjs';
@@ -16,20 +17,20 @@ const evidenceKinds = [
   EvidenceKind.COMPETING_EXPLANATION,
 ];
 
-export function createGuardianMcpServer(service) {
+export function createGuardianMcpServer(service, ownerPrincipal = null) {
   const server = new McpServer({ name: 'capt-guardian', version: '0.1.0' });
 
   server.registerTool('guardian_start_workflow', {
     title: 'Start CAPT Guardian workflow',
     description: 'Open a governed stateful workflow. This grants no execution authority.',
     inputSchema: z.object({ intent: z.string().min(1), scenario: z.string().default('severe_weather') }),
-  }, async ({ intent, scenario }) => textResult(service.startWorkflow(intent, scenario)));
+  }, async ({ intent, scenario }) => textResult(service.startWorkflow(intent, scenario, ownerPrincipal)));
 
   server.registerTool('guardian_inspect_workflow', {
     title: 'Inspect CAPT Guardian workflow',
     description: 'Read current workflow, evidence, proposed actions, approvals, and executions.',
     inputSchema: z.object({ workflowId: z.string().min(1) }),
-  }, async ({ workflowId }) => textResult(service.inspectWorkflow(workflowId)));
+  }, async ({ workflowId }) => textResult(service.inspectWorkflow(workflowId, ownerPrincipal)));
 
   server.registerTool('guardian_add_evidence', {
     title: 'Add typed evidence',
@@ -43,7 +44,7 @@ export function createGuardianMcpServer(service) {
       confidence: z.number().min(0).max(1).nullable().optional(),
     }),
   }, async ({ workflowId, kind, claim, sourceIdentity, provenance, confidence }) => {
-    const item = service.addEvidence(workflowId, kind, claim, sourceIdentity, provenance ?? null, confidence ?? null);
+    const item = service.addEvidence(workflowId, kind, claim, sourceIdentity, provenance ?? null, confidence ?? null, ownerPrincipal);
     return textResult(item);
   });
 
@@ -58,7 +59,7 @@ export function createGuardianMcpServer(service) {
       payload: z.record(z.string(), z.unknown()).default({}),
     }),
   }, async ({ workflowId, capability, summary, consequence, payload }) =>
-    textResult(service.proposeAction(workflowId, capability, summary, consequence, payload)));
+    textResult(service.proposeAction(workflowId, capability, summary, consequence, payload, ownerPrincipal)));
 
   server.registerTool('guardian_execute_action', {
     title: 'Execute authorized action',
@@ -66,7 +67,7 @@ export function createGuardianMcpServer(service) {
     inputSchema: z.object({ workflowId: z.string().min(1), actionId: z.string().min(1) }),
   }, async ({ workflowId, actionId }) => {
     try {
-      return textResult(service.executeAction(workflowId, actionId));
+      return textResult(service.executeAction(workflowId, actionId, ownerPrincipal));
     } catch (error) {
       if (!(error instanceof AuthorityDenied)) throw error;
       return textResult({ status: 'blocked', reason: error.message, workflowId, actionId });
@@ -77,14 +78,14 @@ export function createGuardianMcpServer(service) {
     title: 'Get CAPT Guardian receipt',
     description: 'Return the provenance-bound workflow receipt, including unresolved and denied actions.',
     inputSchema: z.object({ workflowId: z.string().min(1) }),
-  }, async ({ workflowId }) => textResult(service.buildReceipt(workflowId)));
+  }, async ({ workflowId }) => textResult(service.buildReceipt(workflowId, ownerPrincipal)));
 
   return server;
 }
 
 export function createGuardianMcpHandler(service, options = {}) {
   return createMcpHandler(
-    () => createGuardianMcpServer(service),
+    (ctx) => createGuardianMcpServer(service, ctx.authInfo ? oauthPrincipal(ctx.authInfo) : null),
     {
       legacy: 'stateless',
       onerror: options.onerror,

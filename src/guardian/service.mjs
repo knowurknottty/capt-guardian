@@ -11,12 +11,17 @@ export class GuardianService {
     this.executor = new JsonlActionExecutor(executionLogPath);
   }
 
-  startWorkflow(intent, scenario) { return startWorkflow(this.store, intent, scenario); }
-  inspectWorkflow(workflowId) { return inspectWorkflow(this.store, workflowId); }
-  addEvidence(workflowId, kind, claim, sourceIdentity, provenance, confidence = null) {
+  startWorkflow(intent, scenario, ownerPrincipal = null) {
+    return startWorkflow(this.store, intent, scenario, ownerPrincipal);
+  }
+  inspectWorkflow(workflowId, principal = null) { return inspectWorkflow(this.store, workflowId, principal); }
+  assertWorkflowAccess(workflowId, principal = null) { return inspectWorkflow(this.store, workflowId, principal); }
+  addEvidence(workflowId, kind, claim, sourceIdentity, provenance, confidence = null, principal = null) {
+    this.assertWorkflowAccess(workflowId, principal);
     return addEvidence(this.store, workflowId, kind, claim, sourceIdentity, provenance, confidence);
   }
-  proposeAction(workflowId, capability, summary, consequence, payload = {}) {
+  proposeAction(workflowId, capability, summary, consequence, payload = {}, principal = null) {
+    this.assertWorkflowAccess(workflowId, principal);
     return proposeAction(this.store, workflowId, capability, summary, consequence, payload);
   }
   recordApproval(workflowId, actionId, principal, decision, rationale = '') {
@@ -26,10 +31,14 @@ export class GuardianService {
   decideApprovalRequest(approvalRequestId, principal, decision, actionDigest, rationale = '') {
     return decideApprovalRequest(this.store, approvalRequestId, principal, decision, actionDigest, rationale);
   }
-  executeAction(workflowId, actionId) {
+  executeAction(workflowId, actionId, principal = null) {
+    this.assertWorkflowAccess(workflowId, principal);
     return executeAction(this.store, workflowId, actionId, this.executor);
   }
-  buildReceipt(workflowId) { return buildReceipt(this.store, workflowId); }
+  buildReceipt(workflowId, principal = null) {
+    this.assertWorkflowAccess(workflowId, principal);
+    return buildReceipt(this.store, workflowId);
+  }
 }
 
 export { ApprovalDecision, AuthorityDenied, Consequence, EvidenceKind } from './model.mjs';
