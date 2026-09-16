@@ -18,7 +18,12 @@ const allowedHostnames = (process.env.CAPT_GUARDIAN_ALLOWED_HOSTS ?? 'localhost,
 const allowedOriginHostnames = (process.env.CAPT_GUARDIAN_ALLOWED_ORIGINS ?? 'localhost,127.0.0.1,[::1]')
   .split(',').map((value) => value.trim()).filter(Boolean);
 
-const app = createGuardianHttpServer({ service, allowedHostnames, allowedOriginHostnames });
+const humanApprovalToken = process.env.CAPT_GUARDIAN_HUMAN_APPROVAL_TOKEN ?? null;
+const humanPrincipal = process.env.CAPT_GUARDIAN_HUMAN_PRINCIPAL ?? 'human:local-operator';
+
+const app = createGuardianHttpServer({
+  service, allowedHostnames, allowedOriginHostnames, humanApprovalToken, humanPrincipal,
+});
 app.server.listen(port, host, () => {
   console.log(JSON.stringify({ event: 'capt_guardian_listening', host, port, mcpPath: '/mcp' }));
 });

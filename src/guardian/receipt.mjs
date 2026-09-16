@@ -11,11 +11,13 @@ export function buildReceipt(store, workflowId) {
     generatedAt: utcNow(),
     evidence: workflow.evidence,
     actions: workflow.actions,
+    approvalRequests: workflow.approvalRequests ?? [],
     approvals: workflow.approvals,
     executions: workflow.executions,
     summary: {
       evidenceCount: workflow.evidence.length,
       proposedCount: workflow.actions.length,
+      pendingApprovalCount: (workflow.approvalRequests ?? []).filter((a) => a.status === 'PENDING').length,
       approvedCount: workflow.approvals.filter((a) => a.decision === 'APPROVE').length,
       deniedCount: workflow.approvals.filter((a) => a.decision === 'DENY').length,
       executedCount: workflow.executions.filter((e) => e.status === 'executed').length,

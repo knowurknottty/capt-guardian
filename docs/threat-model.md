@@ -17,13 +17,14 @@ CAPT Guardian must fail closed: no model, Alexa component, MCP client, downstrea
 
 | Threat | Required defense |
 | --- | --- |
-| Prompt/model tries to self-authorize | Model output is advisory evidence only; approval API requires explicit principal decision |
+| Prompt/model tries to self-authorize | MCP has no approval mutation tool; the human decision API uses a separate credential and server-bound principal |
 | Action changes after approval | Approval binds canonical SHA-256 action digest; execution recomputes before effect |
 | Approval replay | Approval is single-use and records `consumedAt` |
 | Explicit denial ignored | Latest denial blocks execution and remains in receipt |
 | Inference presented as observation | Evidence kind is explicit and preserved into receipts/UI |
 | Hidden fallback executor | Executor identity is recorded; no silent provider/tool substitution |
 | Side effect occurs before receipt | Execution record captures exact action/authority/result; adapter response is bound into receipt |
-| Stolen/broadened token | OAuth scopes and Guardian capability policy remain separate; least authority at both layers |
+| Alexa OAuth token mistaken for human consent | Account identity/authentication and per-action Guardian approval remain separate authority layers |
+| Human approval credential leaks | Header-only bearer credential, no query-string support, no-store responses, minimum secret length, rotate independently of Alexa OAuth |
 | Stale Alexa registration | Tool/auth changes require redeploy and runtime revalidation |
 | Repository leaks CAPT internals/secrets | Public allowlist; no mothership copy, credentials, private config, memory or research artifacts |

@@ -1,7 +1,7 @@
 import { JsonStateStore } from './store.mjs';
 import { startWorkflow, inspectWorkflow, addEvidence } from './workflow.mjs';
 import { proposeAction } from './action.mjs';
-import { recordApproval } from './approval.mjs';
+import { recordApproval, decideApprovalRequest, listPendingApprovals } from './approval.mjs';
 import { executeAction, JsonlActionExecutor } from './executor.mjs';
 import { buildReceipt } from './receipt.mjs';
 
@@ -21,6 +21,10 @@ export class GuardianService {
   }
   recordApproval(workflowId, actionId, principal, decision, rationale = '') {
     return recordApproval(this.store, workflowId, actionId, principal, decision, rationale);
+  }
+  listPendingApprovals() { return listPendingApprovals(this.store); }
+  decideApprovalRequest(approvalRequestId, principal, decision, actionDigest, rationale = '') {
+    return decideApprovalRequest(this.store, approvalRequestId, principal, decision, actionDigest, rationale);
   }
   executeAction(workflowId, actionId) {
     return executeAction(this.store, workflowId, actionId, this.executor);

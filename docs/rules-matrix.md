@@ -17,7 +17,8 @@ Verified against official sources on 2026-09-16. Recheck immediately before subm
 | Setup | Repository must include setup/run instructions | README reproduction gate |
 | Alexa+ latency | MCP round-trip query response <500 ms | Automated latency gate |
 | Remote reachability | MCP server accessible by remote URL | HTTPS deployment/tunnel gate |
-| Authentication | OAuth 2.1/PKCE requirements apply when account linking is used | Consequential user actions must bind identity/authority |
+| Authentication | Write/user-specific MCP actions should use account linking; OAuth 2.1 authorization-code + PKCE S256; bearer tokens in Authorization header | Implement Alexa resource-server gate independently of Guardian action approval |
+| Step-up authorization | Not currently supported for Alexa+ MCP add-ons | Never use Alexa OAuth as the per-action approval ceremony |
 | Open Source mini | New public project/contribution during hackathon window | Enter unless later rule change conflicts |
 | AWS Builder mini | Kiro Crew alone currently qualifies as documented dev tooling | Preserve optional eligibility without runtime coupling |
 | Friction log | Optional; up to 10% Stage 1 bonus | Maintain continuously |

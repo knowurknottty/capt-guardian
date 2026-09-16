@@ -26,3 +26,17 @@ Entries are captured when encountered, not reconstructed at submission time.
 - Workaround: Minimize retained user data, keep evidence provenance explicit, and treat policy as a pre-submission recheck gate.
 - Actionable suggestion: Publish the security/data policy before the submission deadline with a changelog and certification-impact notes.
 - Source: https://www.developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-quickstart.html
+
+
+## F-003 — Alexa account linking cannot be the per-action approval boundary
+
+- Date: 2026-09-16
+- Task: Bind Alexa customer identity while preserving explicit consent for consequential CAPT Guardian actions.
+- Expected: Potentially reuse an OAuth step-up/consent flow for a high-consequence action.
+- Actual: Current Alexa+ MCP documentation requires OAuth 2.1 authorization-code + PKCE S256 for account linking but lists step-up authorization as not supported yet.
+- Severity: Architectural
+- Workaround: Keep Alexa account linking as identity/authentication only. CAPT Guardian uses a separate human decision channel bound to the exact action digest.
+- Actionable suggestion: Add a supported per-tool/per-action step-up or confirmation primitive that resource servers can request without conflating it with initial account linking.
+- Sources:
+  - https://www.developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-quickstart.html
+  - https://www.developer.amazon.com/docs/alexaplus/add-ons/mcp-toolkit-account-linking.html

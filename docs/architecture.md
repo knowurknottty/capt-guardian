@@ -41,7 +41,9 @@ MCP callers may record `OBSERVATION`, `INFERENCE`, `UNCERTAINTY`, or `COMPETING_
 
 ## Human sovereignty boundary
 
-The public MCP server intentionally has no approval/authorization mutation tool. A future human channel must authenticate the principal independently of the agent, present the exact action/digest, and call the authority kernel out-of-band. The MCP client can then retry execution and receive either `blocked` or an execution receipt.
+The public MCP server intentionally has no approval/authorization mutation tool. The human channel is a separate HTTP surface protected by an independent bearer credential. It lists pending approval requests, shows the exact action digest, derives the principal server-side, and requires that digest to be echoed with APPROVE/DENY. A mismatch is rejected without changing authority. The MCP client can only retry execution and receive either `blocked` or an execution receipt.
+
+Alexa account linking and Guardian approval are intentionally separate. Alexa OAuth establishes who the linked customer is and whether a request is authenticated; it does not constitute per-action human consent. Amazon currently does not support step-up authorization for MCP add-ons, so Guardian must preserve its own explicit action-consent boundary.
 
 ## Protocol serving
 

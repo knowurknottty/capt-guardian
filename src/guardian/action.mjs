@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { assertEnum, Consequence, digest, utcNow } from './model.mjs';
+import { createApprovalRequestForAction } from './approval-request.mjs';
 
 export function actionBinding(action) {
   return {
@@ -24,6 +25,10 @@ export function proposeAction(store, workflowId, capability, summary, consequenc
     };
     action.actionDigest = digest(actionBinding(action));
     workflow.actions.push(action);
+    if (consequence === Consequence.CONSEQUENTIAL) {
+      const request = createApprovalRequestForAction(workflow, action);
+      action.approvalRequestId = request.approvalRequestId;
+    }
     return action;
   });
 }

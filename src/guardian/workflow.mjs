@@ -7,7 +7,7 @@ export function startWorkflow(store, intent, scenario = 'severe_weather') {
     const workflowId = `wf_${randomUUID()}`;
     const workflow = {
       workflowId, intent: intent.trim(), scenario, state: 'OPEN', createdAt: utcNow(),
-      evidence: [], actions: [], approvals: [], executions: [],
+      evidence: [], actions: [], approvalRequests: [], approvals: [], executions: [],
     };
     state.workflows[workflowId] = workflow;
     return workflow;

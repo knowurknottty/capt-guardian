@@ -73,8 +73,16 @@ Useful environment variables:
 - `CAPT_GUARDIAN_STATE_DIR`
 - `CAPT_GUARDIAN_ALLOWED_HOSTS`
 - `CAPT_GUARDIAN_ALLOWED_ORIGINS`
+- `CAPT_GUARDIAN_HUMAN_APPROVAL_TOKEN` — enables the separate human decision API; minimum 32 bytes
+- `CAPT_GUARDIAN_HUMAN_PRINCIPAL` — server-bound principal recorded on decisions
 
-Do not bind the development defaults publicly without configuring the production authentication and host/origin policy.
+Do not bind the development defaults publicly without configuring the production authentication and host/origin policy. The human approval API is disabled when `CAPT_GUARDIAN_HUMAN_APPROVAL_TOKEN` is unset.
+
+## Human approval boundary
+
+The MCP client never receives a tool capable of approving an action. A separately authenticated human channel exposes `GET /human/approvals` and `POST /human/approvals/:approvalRequestId/decision`. Decisions must echo the exact action digest the human reviewed; mismatches fail closed. The bearer credential is accepted only in the `Authorization` header, never a query string.
+
+This is the local/demo human-decision channel, not Alexa account linking. Production Alexa identity will be handled independently with OAuth 2.1 + PKCE S256.
 
 ## Verification
 
@@ -97,7 +105,7 @@ The current benchmark is a local server baseline only. It does **not** prove Ale
 
 ## Current limits
 
-Not yet claimed complete: production OAuth/account linking, human approval UI/channel, external evidence adapters, specialist model cohorts, MCP App UI, remote Alexa+ invocation, or public-endpoint latency. These are explicit next gates rather than mocked features.
+Not yet claimed complete: production OAuth/account linking, polished human approval UI, external evidence adapters, specialist model cohorts, MCP App UI, remote Alexa+ invocation, or public-endpoint latency. These are explicit next gates rather than mocked features.
 
 ## License
 
